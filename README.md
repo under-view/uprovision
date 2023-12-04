@@ -1,2 +1,4 @@
 # uprovision
-Yet another disk manipluation application and library
+
+Yet another disk manipulation application and library implementation.
+Used by underview to resize partitions.
