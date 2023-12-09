@@ -36,7 +36,7 @@ endif
 
 pkg = import('pkgconfig')
 
-pkglibs = [libuprovision, libfdisk]
+pkglibs = [libuprovision, libuprovision_deps]
 pkgsubdirs = []
 pkg.generate(libraries: pkglibs,
              subdirs : pkgsubdirs,
