@@ -18,22 +18,46 @@ static int
 device_create_with_fdisk (struct uprov_device *device)
 {
 	int ret = -1;
+	size_t numParts = 0, p;
 
 	struct fdisk_context *cxt = NULL;
+	struct fdisk_table *table = NULL;
+	struct fdisk_partition *part = NULL;
 
 	cxt = fdisk_new_context();
 	if (!cxt) {
 		handy_logme(HANDY_LOG_DANGER, "fdisk_new_context failed");
-		return -1;
+		goto device_create_with_fdisk_exit;
 	}
 
 	ret = fdisk_assign_device(cxt, device->blockDevice, 0);
 	if (ret < 0) {
 		handy_logme(HANDY_LOG_DANGER, "fdisk_assign_device('%s') failed", device->blockDevice);
-		return -1;
+		goto device_create_with_fdisk_exit;
 	}
 
-	return 0;
+	ret = fdisk_get_partitions(cxt, &table);
+	if (ret != 0) {
+		handy_logme(HANDY_LOG_DANGER, "fdisk_get_partitions('%s') failed", device->blockDevice);
+		goto device_create_with_fdisk_exit;
+	}
+
+	numParts = fdisk_table_get_nents(table);
+
+	for (p = 0; p < numParts; p++) {
+		part = fdisk_table_get_partition(table, p);
+
+		fdisk_unref_partition(part); part = NULL;
+	}
+
+device_create_with_fdisk_exit:
+
+	if (table)
+		fdisk_unref_table(table);
+	if (cxt)
+		fdisk_unref_context(cxt);
+
+	return ret;
 }
 
 
