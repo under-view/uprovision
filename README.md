@@ -9,9 +9,9 @@ $ meson build
 $ ninja -C build
 
 # For Yocto SDK builds
-$ meson --prefix="${SDKTARGETSYSROOT}/usr" \
-        --libdir="${SDKTARGETSYSROOT}/usr/lib64" \
-        build
+$ meson setup --prefix="${SDKTARGETSYSROOT}/usr" \
+              --libdir="${SDKTARGETSYSROOT}/usr/lib64" \
+              build
 $ ninja -C build
 ```
 
