@@ -2,7 +2,7 @@
 #define UPROV_DEVICE_H
 
 
-struct uprov_device_partitions {
+struct uprov_device_partition {
 	long int number;
 	long int startSector;
 	long int endSector;
@@ -11,10 +11,10 @@ struct uprov_device_partitions {
 
 
 struct uprov_device {
-	unsigned int                   blockSize;
-	char                           *blockDevice;
-	unsigned int                   partitionCount;
-	struct uprov_device_partitions *partitions;
+	unsigned int                  blockSize;
+	char                          *blockDevice;
+	unsigned int                  partitionCount;
+	struct uprov_device_partition *partitions;
 };
 
 

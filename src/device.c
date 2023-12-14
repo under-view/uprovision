@@ -18,7 +18,7 @@ static int
 device_create_with_fdisk (struct uprov_device *device)
 {
 	int ret = -1;
-	size_t numParts = 0, p;
+	unsigned int p;
 
 	struct fdisk_context *cxt = NULL;
 	struct fdisk_table *table = NULL;
@@ -42,10 +42,22 @@ device_create_with_fdisk (struct uprov_device *device)
 		goto device_create_with_fdisk_exit;
 	}
 
-	numParts = fdisk_table_get_nents(table);
+	device->blockSize = fdisk_get_sector_size(cxt);
+	device->partitionCount = fdisk_table_get_nents(table);
 
-	for (p = 0; p < numParts; p++) {
-		part = fdisk_table_get_partition(table, p);
+	device->partitions = calloc(device->partitionCount, sizeof(struct uprov_device_partition));
+	if (!device->partitions) {
+		handy_logme(HANDY_LOG_DANGER, "calloc: %s", strerror(errno));
+		goto device_create_with_fdisk_exit;
+	}
+
+	for (p = 0; p < device->partitionCount; p++) {
+		part = fdisk_table_get_partition_by_partno(table, p);
+
+		device->partitions[p].number = fdisk_partition_get_partno(part); // redundant, but fine
+		device->partitions[p].startSector = fdisk_partition_get_start(part);
+		device->partitions[p].endSector = fdisk_partition_get_end(part);
+		device->partitions[p].sectorSize = fdisk_partition_get_size(part);
 
 		fdisk_unref_partition(part); part = NULL;
 	}
