@@ -2,6 +2,12 @@
 #define UPROV_DEVICE_H
 
 
+enum uprov_device_type {
+	UPROV_DEVICE = 0x00,
+	UPROV_DEVICE_BLOCK_DEVICE = 0x01,
+};
+
+
 struct uprov_device_partition {
 	long int number;
 	long int startSector;
@@ -19,7 +25,7 @@ struct uprov_device {
 
 
 struct uprov_device_create_info {
-	char *blockDevice;
+	const char *blockDevice;
 };
 
 
@@ -29,5 +35,19 @@ uprov_device_create (struct uprov_device_create_info *device);
 
 void
 uprov_device_destroy (struct uprov_device *device);
+
+
+struct uprov_device_modify_info {
+	union {
+		const char *blockDevice;
+		struct uprov_device *device;
+	} modWith;
+	enum uprov_device_type deviceType;
+};
+
+
+int
+uprov_device_modify (struct uprov_device_modify_info *deviceModInfo);
+
 
 #endif /* UPROV_DEVICE_H */

@@ -119,3 +119,62 @@ uprov_device_destroy (struct uprov_device *device)
 /*********************************************************
  * END OF uprov_device_create_{create,destroy} FUNCTIONS *
  *********************************************************/
+
+
+/******************************************
+ * START OF uprov_device_modify FUNCTIONS *
+ ******************************************/
+
+
+static int
+device_modify (struct uprov_device HANDY_UNUSED *device)
+{
+	return 0;
+}
+
+
+static int
+device_modify_with_block (const char *blockDevice)
+{
+	int ret = -1;
+
+	struct uprov_device *device = NULL;
+
+	struct uprov_device_create_info deviceInfo;
+	deviceInfo.blockDevice = blockDevice;
+
+	device = uprov_device_create(&deviceInfo);
+	if (!device)
+		return -1;
+
+	ret = device_modify(device);	
+	uprov_device_destroy(device);
+
+	return ret;
+}
+
+
+int
+uprov_device_modify (struct uprov_device_modify_info *deviceModInfo)
+{
+	int ret = -1;
+
+	switch (deviceModInfo->deviceType) {
+		case UPROV_DEVICE:
+			ret = device_modify(deviceModInfo->modWith.device);
+			break;
+		case UPROV_DEVICE_BLOCK_DEVICE:
+			ret = device_modify_with_block(deviceModInfo->modWith.blockDevice);
+			break;
+		default:
+			handy_logme(HANDY_LOG_DANGER, "incorrect deviceType specified");
+			break;
+	}
+
+	return ret;
+}
+
+
+/****************************************
+ * END OF uprov_device_modify FUNCTIONS *
+ ****************************************/
