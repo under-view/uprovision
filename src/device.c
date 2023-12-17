@@ -26,19 +26,19 @@ device_create_with_fdisk (struct uprov_device *device)
 
 	cxt = fdisk_new_context();
 	if (!cxt) {
-		handy_logme(HANDY_LOG_DANGER, "fdisk_new_context failed");
+		handy_logme_err("fdisk_new_context failed");
 		goto device_create_with_fdisk_exit;
 	}
 
 	ret = fdisk_assign_device(cxt, device->blockDevice, 0);
 	if (ret < 0) {
-		handy_logme(HANDY_LOG_DANGER, "fdisk_assign_device('%s') failed", device->blockDevice);
+		handy_logme_err("fdisk_assign_device('%s') failed", device->blockDevice);
 		goto device_create_with_fdisk_exit;
 	}
 
 	ret = fdisk_get_partitions(cxt, &table);
 	if (ret != 0) {
-		handy_logme(HANDY_LOG_DANGER, "fdisk_get_partitions('%s') failed", device->blockDevice);
+		handy_logme_err("fdisk_get_partitions('%s') failed", device->blockDevice);
 		goto device_create_with_fdisk_exit;
 	}
 
@@ -82,13 +82,13 @@ uprov_device_create (struct uprov_device_create_info *deviceCreateInfo)
 
 	device = calloc(1, sizeof(struct uprov_device));
 	if (!device) {
-		handy_logme(HANDY_LOG_DANGER, "calloc: %s", strerror(errno));
+		handy_logme_err("calloc: %s", strerror(errno));
 		return NULL;
 	}
 
 	device->blockDevice = strndup(deviceCreateInfo->blockDevice, BLOCK_DEVICE_MAX_SIZE);
 	if (!device->blockDevice) {
-		handy_logme(HANDY_LOG_DANGER, "strndup: %s", strerror(errno));
+		handy_logme_err("strndup: %s", strerror(errno));
 		goto uprov_device_create_exit_error;
 	}
 
@@ -167,7 +167,7 @@ uprov_device_modify (struct uprov_device_modify_info *deviceModInfo)
 			ret = device_modify_with_block(deviceModInfo->modWith.blockDevice);
 			break;
 		default:
-			handy_logme(HANDY_LOG_DANGER, "incorrect deviceType specified");
+			handy_logme_err("incorrect deviceType specified");
 			break;
 	}
 
