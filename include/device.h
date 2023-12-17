@@ -17,6 +17,7 @@ struct uprov_device_partition {
 
 
 struct uprov_device {
+	int                           blockDeviceFd;
 	unsigned int                  blockSize;
 	char                          *blockDevice;
 	unsigned int                  partitionCount;

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <errno.h>
 
 #include <libfdisk/libfdisk.h>
@@ -30,9 +32,16 @@ device_create_with_fdisk (struct uprov_device *device)
 		goto device_create_with_fdisk_exit;
 	}
 
-	ret = fdisk_assign_device(cxt, device->blockDevice, 0);
+	device->blockDeviceFd = open(device->blockDevice, O_RDWR);
+	if (device->blockDeviceFd < 0) {
+		handy_logme_err("open: %s", strerror(errno));
+		goto device_create_with_fdisk_exit;
+	}
+
+	ret = fdisk_assign_device_by_fd(cxt, device->blockDeviceFd, device->blockDevice, 0);
 	if (ret < 0) {
-		handy_logme_err("fdisk_assign_device('%s') failed", device->blockDevice);
+		handy_logme_err("fdisk_assign_device_by_fd('%d','%s') failed",
+		                device->blockDeviceFd, device->blockDevice);
 		goto device_create_with_fdisk_exit;
 	}
 
@@ -110,6 +119,7 @@ uprov_device_destroy (struct uprov_device *device)
 	if (!device)
 		return;
 
+	close(device->blockDeviceFd);
 	free(device->blockDevice);
 	free(device->partitions);
 	free(device);
