@@ -38,17 +38,19 @@ void
 uprov_device_destroy (struct uprov_device *device);
 
 
-struct uprov_device_modify_info {
+struct uprov_device_resize_info {
 	union {
-		const char *blockDevice;
+		const char          *blockDevice;
 		struct uprov_device *device;
-	} modWith;
+	} resize;
+
 	enum uprov_device_type deviceType;
+	int                    partNum;
 };
 
 
 int
-uprov_device_modify (struct uprov_device_modify_info *deviceModInfo);
+uprov_device_resize (struct uprov_device_resize_info *deviceModInfo);
 
 
 #endif /* UPROV_DEVICE_H */

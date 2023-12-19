@@ -75,8 +75,11 @@ device_create_with_fdisk_exit:
 
 	if (table)
 		fdisk_unref_table(table);
-	if (cxt)
+
+	if (cxt) {
+		fdisk_deassign_device(cxt, 0);
 		fdisk_unref_context(cxt);
+	}
 
 	return ret;
 }
@@ -132,19 +135,43 @@ uprov_device_destroy (struct uprov_device *device)
 
 
 /******************************************
- * START OF uprov_device_modify FUNCTIONS *
+ * START OF uprov_device_resize FUNCTIONS *
  ******************************************/
 
 
 static int
-device_modify (struct uprov_device HANDY_UNUSED *device)
+device_resize (struct uprov_device *device)
 {
-	return 0;
+	int ret = -1;
+
+	struct fdisk_context *cxt = NULL;
+
+	cxt = fdisk_new_context();
+	if (!cxt) {
+		handy_logme_err("fdisk_new_context failed");
+		goto device_resize_exit;
+	}
+
+	ret = fdisk_assign_device_by_fd(cxt, device->blockDeviceFd, device->blockDevice, 0);
+	if (ret < 0) {
+		handy_logme_err("fdisk_assign_device_by_fd('%d','%s') failed",
+		                device->blockDeviceFd, device->blockDevice);
+		goto device_resize_exit;
+	}
+
+device_resize_exit:
+
+	if (cxt) {
+		fdisk_deassign_device(cxt, 0);
+		fdisk_unref_context(cxt);
+	}
+
+	return ret;
 }
 
 
 static int
-device_modify_with_block (const char *blockDevice)
+device_resize_with_block (const char *blockDevice)
 {
 	int ret = -1;
 
@@ -157,7 +184,7 @@ device_modify_with_block (const char *blockDevice)
 	if (!device)
 		return -1;
 
-	ret = device_modify(device);	
+	ret = device_resize(device);
 	uprov_device_destroy(device);
 
 	return ret;
@@ -165,16 +192,16 @@ device_modify_with_block (const char *blockDevice)
 
 
 int
-uprov_device_modify (struct uprov_device_modify_info *deviceModInfo)
+uprov_device_resize (struct uprov_device_resize_info *deviceResizeInfo)
 {
 	int ret = -1;
 
-	switch (deviceModInfo->deviceType) {
+	switch (deviceResizeInfo->deviceType) {
 		case UPROV_DEVICE:
-			ret = device_modify(deviceModInfo->modWith.device);
+			ret = device_resize(deviceResizeInfo->resize.device);
 			break;
 		case UPROV_DEVICE_BLOCK_DEVICE:
-			ret = device_modify_with_block(deviceModInfo->modWith.blockDevice);
+			ret = device_resize_with_block(deviceResizeInfo->resize.blockDevice);
 			break;
 		default:
 			handy_logme_err("incorrect deviceType specified");
@@ -186,5 +213,5 @@ uprov_device_modify (struct uprov_device_modify_info *deviceModInfo)
 
 
 /****************************************
- * END OF uprov_device_modify FUNCTIONS *
+ * END OF uprov_device_resize FUNCTIONS *
  ****************************************/
