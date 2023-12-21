@@ -69,7 +69,7 @@ test_uprov_device_resize_with_block (void HANDY_UNUSED **state)
 
 	struct uprov_device_resize_info deviceResizeInfo;
 	deviceResizeInfo.resize.blockDevice = BLOCK_DEVICE;
-	deviceResizeInfo.deviceType = UPROV_DEVICE;
+	deviceResizeInfo.deviceType = UPROV_DEVICE_BLOCK_DEVICE;
 	deviceResizeInfo.partNum = 2;
 	ret = uprov_device_resize(&deviceResizeInfo);
 	assert_int_equal(ret, 0);
@@ -83,7 +83,7 @@ main (void)
 		cmocka_unit_test(test_uprov_device_create),
 		cmocka_unit_test(test_uprov_device_resize_with_invalid_device_type),
 		cmocka_unit_test(test_uprov_device_resize_with_device),
-//		cmocka_unit_test(test_uprov_device_resize_with_block),
+		cmocka_unit_test(test_uprov_device_resize_with_block),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);
