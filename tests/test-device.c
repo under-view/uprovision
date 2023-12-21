@@ -54,7 +54,7 @@ test_uprov_device_resize_with_device (void HANDY_UNUSED **state)
 
 	deviceResizeInfo.resize.device = device;
 	deviceResizeInfo.deviceType = UPROV_DEVICE;
-	deviceResizeInfo.partNum = 2;
+	deviceResizeInfo.partNum = 1;
 	ret = uprov_device_resize(&deviceResizeInfo);
 	assert_int_equal(ret, 0);
 
@@ -70,7 +70,7 @@ test_uprov_device_resize_with_block (void HANDY_UNUSED **state)
 	struct uprov_device_resize_info deviceResizeInfo;
 	deviceResizeInfo.resize.blockDevice = BLOCK_DEVICE;
 	deviceResizeInfo.deviceType = UPROV_DEVICE_BLOCK_DEVICE;
-	deviceResizeInfo.partNum = 2;
+	deviceResizeInfo.partNum = 1;
 	ret = uprov_device_resize(&deviceResizeInfo);
 	assert_int_equal(ret, 0);
 }

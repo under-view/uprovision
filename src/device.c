@@ -138,22 +138,66 @@ uprov_device_destroy (struct uprov_device *device)
 
 
 static int
-device_resize (struct uprov_device *device)
+device_resize (struct uprov_device *device, int partNum)
 {
-	int ret = 0;
+	int ret = -1;
 
-	struct fdisk_context HANDY_UNUSED *cxt = NULL;
+	uint64_t totalSectors = 0;
+	uint64_t startSector = 0;
+	uint64_t endSector = 0;
+	uint64_t offsetSectors = 0;
+
+	struct fdisk_context *cxt = NULL;
+	struct fdisk_table *table = NULL;
+	struct fdisk_partition *part = NULL;
+	struct uprov_device_partition partition;
 
 	cxt = device->fdiskContext;
+	partition = device->partitions[partNum];
 
-//device_resize_exit:
+	fdisk_disable_dialogs(cxt, 1);
+
+	ret = fdisk_get_partitions(cxt, &table);
+	if (ret != 0) {
+		handy_logme_err("fdisk_get_partitions('%d','%d') failed",
+		                device->blockDeviceFd, device->blockDevice);
+		goto device_resize_exit;
+	}
+
+	startSector = partition.startSector;
+	endSector = partition.endSector;
+	totalSectors = fdisk_get_nsectors(cxt);
+	offsetSectors = totalSectors - startSector - 512;
+
+	if (totalSectors > endSector) {
+		part = fdisk_table_get_partition_by_partno(table, partition.number);
+
+		fdisk_partition_size_explicit(part, 1);
+		fdisk_partition_set_size(part, offsetSectors);
+		fdisk_partition_end_follow_default(part, 1);
+
+		ret = fdisk_set_partition(cxt, partition.number, part);
+		if (ret != 0) {
+			handy_logme_err("fdisk_set_partition('%d','%s') failed",
+					device->blockDeviceFd, device->blockDevice);
+		}
+
+		fdisk_unref_partition(part); part = NULL;
+	}
+
+device_resize_exit:
+
+	if (table)
+		fdisk_unref_table(table);
+
+	fdisk_disable_dialogs(cxt, 0);
 
 	return ret;
 }
 
 
 static int
-device_resize_with_block (const char *blockDevice)
+device_resize_with_block (const char *blockDevice, int partNum)
 {
 	int ret = -1;
 
@@ -166,7 +210,7 @@ device_resize_with_block (const char *blockDevice)
 	if (!device)
 		return -1;
 
-	ret = device_resize(device);
+	ret = device_resize(device, partNum);
 	uprov_device_destroy(device);
 
 	return ret;
@@ -180,10 +224,10 @@ uprov_device_resize (struct uprov_device_resize_info *deviceResizeInfo)
 
 	switch (deviceResizeInfo->deviceType) {
 		case UPROV_DEVICE:
-			ret = device_resize(deviceResizeInfo->resize.device);
+			ret = device_resize(deviceResizeInfo->resize.device, deviceResizeInfo->partNum);
 			break;
 		case UPROV_DEVICE_BLOCK_DEVICE:
-			ret = device_resize_with_block(deviceResizeInfo->resize.blockDevice);
+			ret = device_resize_with_block(deviceResizeInfo->resize.blockDevice, deviceResizeInfo->partNum);
 			break;
 		default:
 			handy_logme_err("incorrect deviceType specified");
