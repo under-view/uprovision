@@ -22,6 +22,7 @@ struct uprov_device {
 	char                          *blockDevice;
 	unsigned int                  partitionCount;
 	struct uprov_device_partition *partitions;
+	void                          *fdiskContext;
 };
 
 

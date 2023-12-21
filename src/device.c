@@ -32,6 +32,7 @@ device_create_with_fdisk (struct uprov_device *device)
 		goto device_create_with_fdisk_exit;
 	}
 
+	device->fdiskContext = cxt;
 	device->blockDeviceFd = open(device->blockDevice, O_RDWR);
 	if (device->blockDeviceFd < 0) {
 		handy_logme_err("open: %s", strerror(errno));
@@ -75,11 +76,6 @@ device_create_with_fdisk_exit:
 
 	if (table)
 		fdisk_unref_table(table);
-
-	if (cxt) {
-		fdisk_deassign_device(cxt, 0);
-		fdisk_unref_context(cxt);
-	}
 
 	return ret;
 }
@@ -125,6 +121,8 @@ uprov_device_destroy (struct uprov_device *device)
 	close(device->blockDeviceFd);
 	free(device->blockDevice);
 	free(device->partitions);
+	fdisk_deassign_device((struct fdisk_context*)device->fdiskContext, 0);
+	fdisk_unref_context((struct fdisk_context*)device->fdiskContext);
 	free(device);
 }
 
@@ -142,29 +140,13 @@ uprov_device_destroy (struct uprov_device *device)
 static int
 device_resize (struct uprov_device *device)
 {
-	int ret = -1;
+	int ret = 0;
 
-	struct fdisk_context *cxt = NULL;
+	struct fdisk_context HANDY_UNUSED *cxt = NULL;
 
-	cxt = fdisk_new_context();
-	if (!cxt) {
-		handy_logme_err("fdisk_new_context failed");
-		goto device_resize_exit;
-	}
+	cxt = device->fdiskContext;
 
-	ret = fdisk_assign_device_by_fd(cxt, device->blockDeviceFd, device->blockDevice, 0);
-	if (ret < 0) {
-		handy_logme_err("fdisk_assign_device_by_fd('%d','%s') failed",
-		                device->blockDeviceFd, device->blockDevice);
-		goto device_resize_exit;
-	}
-
-device_resize_exit:
-
-	if (cxt) {
-		fdisk_deassign_device(cxt, 0);
-		fdisk_unref_context(cxt);
-	}
+//device_resize_exit:
 
 	return ret;
 }
