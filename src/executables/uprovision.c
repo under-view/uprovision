@@ -9,10 +9,11 @@
 static void
 help_msg (const char *binName)
 {
-	fprintf(stdout, "Usage: %s <options>\n", binName);
-	fprintf(stdout, "Options:\n");
-	fprintf(stdout, "\t-r,--resize <partition number> "); fprintf(stdout, "Resize a drive partition to extend\n");
-	fprintf(stdout, "\t                               "); fprintf(stdout, "it out to the end of drive.\n");
+	handy_log_print(HANDY_LOG_SUCCESS, "Usage: %s <options>\n", binName);
+	handy_log_print(HANDY_LOG_WARNING, "Example: %s --resize 1\n", binName);
+	handy_log_print(HANDY_LOG_INFO, "Options:\n");
+	handy_log_print(HANDY_LOG_DANGER, "\t-r,--resize <partition number> "); handy_log_print(HANDY_LOG_INFO, "Resize a drive partition to extend\n");
+	handy_log_print(HANDY_LOG_INFO,   "\t                               "); handy_log_print(HANDY_LOG_INFO, "it out to the end of drive.\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -30,10 +31,11 @@ main (int argc, char *argv[])
 	};
 
 	if (argc < 2) {
-		fprintf(stdout, "[x] No option specified.\n");
+		handy_log_print(HANDY_LOG_DANGER, "[x] No option specified!!\n\n");
 		help_msg(argv[0]);
 	}
 
+	// Allows us to control what's displayed upon invalid option.
 	opterr = 0;
 
 	while (1) {
@@ -50,7 +52,7 @@ main (int argc, char *argv[])
 				help_msg(argv[0]);
 				break;
 			case '?':
-				fprintf(stdout, "[x] Invalid option\n");
+				handy_log_print(HANDY_LOG_DANGER, "[x] Invalid option specified!!\n\n");
 				help_msg(argv[0]);
 				break;
 			default:
