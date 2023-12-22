@@ -30,6 +30,12 @@ libuprovision = library(
   install: true
 )
 
+executable(pname, 'src/executables/uprovision.c',
+           link_with: libuprovision,
+           include_directories: [inc],
+           c_args: pargs,
+           install: true)
+
 if get_option('tests')
   subdir('tests')
 endif
