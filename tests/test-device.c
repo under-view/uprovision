@@ -4,12 +4,12 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-#include <handy/handy.h>
+#include <cando/cando.h>
 
 #include "device.h"
 
-static void HANDY_UNUSED
-test_uprov_device_create (void HANDY_UNUSED **state)
+static void CANDO_UNUSED
+test_uprov_device_create (void CANDO_UNUSED **state)
 {
 	struct uprov_device *device = NULL;
 
@@ -23,8 +23,8 @@ test_uprov_device_create (void HANDY_UNUSED **state)
 }
 
 
-static void HANDY_UNUSED
-test_uprov_device_resize_with_invalid_device_type (void HANDY_UNUSED **state)
+static void CANDO_UNUSED
+test_uprov_device_resize_with_invalid_device_type (void CANDO_UNUSED **state)
 {
 	int ret = -1;
 
@@ -38,8 +38,8 @@ test_uprov_device_resize_with_invalid_device_type (void HANDY_UNUSED **state)
 }
 
 
-static void HANDY_UNUSED
-test_uprov_device_resize_with_device (void HANDY_UNUSED **state)
+static void CANDO_UNUSED
+test_uprov_device_resize_with_device (void CANDO_UNUSED **state)
 {
 	int ret = -1;
 
@@ -62,8 +62,8 @@ test_uprov_device_resize_with_device (void HANDY_UNUSED **state)
 }
 
 
-static void HANDY_UNUSED
-test_uprov_device_resize_with_block (void HANDY_UNUSED **state)
+static void CANDO_UNUSED
+test_uprov_device_resize_with_block (void CANDO_UNUSED **state)
 {
 	int ret = -1;
 

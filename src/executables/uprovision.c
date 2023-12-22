@@ -2,18 +2,18 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include <handy/handy.h>
+#include <cando/cando.h>
 
 #include "uprov.h"
 
 static void
 help_msg (const char *binName)
 {
-	handy_log_print(HANDY_LOG_SUCCESS, "Usage: %s <options>\n", binName);
-	handy_log_print(HANDY_LOG_WARNING, "Example: %s --resize 1\n", binName);
-	handy_log_print(HANDY_LOG_INFO, "Options:\n");
-	handy_log_print(HANDY_LOG_DANGER, "\t-r,--resize <partition number> "); handy_log_print(HANDY_LOG_INFO, "Resize a drive partition to extend\n");
-	handy_log_print(HANDY_LOG_INFO,   "\t                               "); handy_log_print(HANDY_LOG_INFO, "it out to the end of drive.\n");
+	cando_log_print(CANDO_LOG_SUCCESS, "Usage: %s <options>\n", binName);
+	cando_log_print(CANDO_LOG_WARNING, "Example: %s --resize 1\n", binName);
+	cando_log_print(CANDO_LOG_INFO, "Options:\n");
+	cando_log_print(CANDO_LOG_DANGER, "\t-r,--resize <partition number> "); cando_log_print(CANDO_LOG_INFO, "Resize a drive partition to extend\n");
+	cando_log_print(CANDO_LOG_INFO,   "\t                               "); cando_log_print(CANDO_LOG_INFO, "it out to the end of drive.\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -31,7 +31,7 @@ main (int argc, char *argv[])
 	};
 
 	if (argc < 2) {
-		handy_log_print(HANDY_LOG_DANGER, "[x] No option specified!!\n\n");
+		cando_log_print(CANDO_LOG_DANGER, "[x] No option specified!!\n\n");
 		help_msg(argv[0]);
 	}
 
@@ -52,7 +52,7 @@ main (int argc, char *argv[])
 				help_msg(argv[0]);
 				break;
 			case '?':
-				handy_log_print(HANDY_LOG_DANGER, "[x] Invalid option specified!!\n\n");
+				cando_log_print(CANDO_LOG_DANGER, "[x] Invalid option specified!!\n\n");
 				help_msg(argv[0]);
 				break;
 			default:
