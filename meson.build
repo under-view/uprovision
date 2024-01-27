@@ -3,7 +3,7 @@ project(
   'c',
   version: '0.0.1',
   license: 'MIT',
-  meson_version: '>=0.56.0',
+  meson_version: '>=1.3.1',
   default_options: [
     'warning_level=2',
     'werror=true',
