@@ -47,10 +47,6 @@ executable(project_name,
            c_args: pargs,
            install: true)
 
-if get_option('tests')
-  subdir('tests')
-endif
-
 pkg = import('pkgconfig')
 
 pkgsubdirs = []
@@ -70,5 +66,9 @@ pkg.generate(libraries: pkglibs_shared,
              subdirs : pkgsubdirs,
              version : so_version,
              name : project_name,
-             filebase : 'uprovision',
+             filebase : project_name,
              description : 'Disk manipulation libfdisk wrapper library')
+
+if get_option('tests')
+  subdir('tests')
+endif
