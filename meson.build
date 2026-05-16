@@ -54,8 +54,19 @@ endif
 pkg = import('pkgconfig')
 
 pkgsubdirs = []
-pkglibs = [libuprovision, libuprovision_deps]
-pkg.generate(libraries: pkglibs,
+
+pkglibs_shared = [
+  libuprovision,
+  libuprovision_deps
+]
+
+pkglibs_private = [
+  libuprovision_a,
+  libuprovision_deps
+]
+
+pkg.generate(libraries: pkglibs_shared,
+             libraries_private: pkglibs_private,
              subdirs : pkgsubdirs,
              version : so_version,
              name : project_name,
