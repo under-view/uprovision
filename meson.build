@@ -1,5 +1,5 @@
 project(
-  'uprovision',
+  'uprov',
   'c',
   version: '0.0.1',
   license: 'MIT',
@@ -22,26 +22,26 @@ inc = include_directories('include')
 subdir('include')
 subdir('src')
 
-libuprovision = library(
+libuprov = library(
   project_name, fs,
   version: so_version,
   include_directories: inc,
-  dependencies: libuprovision_deps,
+  dependencies: libuprov_deps,
   c_args: pargs,
   install: true
 )
 
-libuprovision_a = static_library(
+libuprov_a = static_library(
   project_name, fs,
   include_directories: inc,
-  dependencies: libuprovision_deps,
+  dependencies: libuprov_deps,
   c_args: pargs,
   install: true
 )
 
 executable(project_name,
-           'src/executables/uprovision.c',
-           link_with: libuprovision,
+           'src/executables/uprov.c',
+           link_with: libuprov,
            include_directories: inc,
            dependencies: [libudo],
            c_args: pargs,
@@ -52,13 +52,13 @@ pkg = import('pkgconfig')
 pkgsubdirs = []
 
 pkglibs_shared = [
-  libuprovision,
-  libuprovision_deps
+  libuprov,
+  libuprov_deps
 ]
 
 pkglibs_private = [
-  libuprovision_a,
-  libuprovision_deps
+  libuprov_a,
+  libuprov_deps
 ]
 
 pkg.generate(libraries: pkglibs_shared,

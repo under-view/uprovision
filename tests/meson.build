@@ -14,7 +14,7 @@ foreach p : progs
   endif
 
   exec = executable(exec_name, p,
-                    link_with: libuprovision,
+                    link_with: libuprov,
                     dependencies: [libcmocka, libudo],
                     include_directories: [inc],
                     c_args: pargs,
