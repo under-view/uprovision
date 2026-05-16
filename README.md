@@ -1,6 +1,8 @@
-# uprovision
+# uprov
 
-Yet another disk manipulation libfdisk wrapper library and application implementation.
+Short for uprovision.
+
+It's a disk manipulation wrapper library and application.
 Used by underview to resize partitions.
 
 ## Building
