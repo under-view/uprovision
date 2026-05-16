@@ -15,7 +15,7 @@ foreach p : progs
 
   exec = executable(exec_name, p,
                     link_with: libuprovision,
-                    dependencies: [libcmocka, libcando],
+                    dependencies: [libcmocka, libudo],
                     include_directories: [inc],
                     c_args: pargs,
                     install: false)
