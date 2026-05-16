@@ -6,7 +6,7 @@
 #include <errno.h>
 
 #include <libfdisk/libfdisk.h>
-#include <cando/cando.h>
+#include <udo/udo.h>
 
 #include "device.h"
 
@@ -28,27 +28,27 @@ device_create_with_fdisk (struct uprov_device *device)
 
 	cxt = fdisk_new_context();
 	if (!cxt) {
-		cando_log_err("fdisk_new_context failed\n");
+		udo_log_error("fdisk_new_context failed\n");
 		goto device_create_with_fdisk_exit;
 	}
 
 	device->fdiskContext = cxt;
 	device->blockDeviceFd = open(device->blockDevice, O_RDWR);
 	if (device->blockDeviceFd < 0) {
-		cando_log_err("open: %s\n", strerror(errno));
+		udo_log_error("open: %s\n", strerror(errno));
 		goto device_create_with_fdisk_exit;
 	}
 
 	ret = fdisk_assign_device_by_fd(cxt, device->blockDeviceFd, device->blockDevice, 0);
 	if (ret < 0) {
-		cando_log_err("fdisk_assign_device_by_fd('%d','%s') failed\n",
+		udo_log_error("fdisk_assign_device_by_fd('%d','%s') failed\n",
 		              device->blockDeviceFd, device->blockDevice);
 		goto device_create_with_fdisk_exit;
 	}
 
 	ret = fdisk_get_partitions(cxt, &table);
 	if (ret != 0) {
-		cando_log_err("fdisk_get_partitions('%d','%s') failed\n",
+		udo_log_error("fdisk_get_partitions('%d','%s') failed\n",
 		              device->blockDeviceFd, device->blockDevice);
 		goto device_create_with_fdisk_exit;
 	}
@@ -58,7 +58,7 @@ device_create_with_fdisk (struct uprov_device *device)
 
 	device->partitions = calloc(device->partitionCount, sizeof(struct uprov_device_partition));
 	if (!device->partitions) {
-		cando_log_err("calloc: %s\n", strerror(errno));
+		udo_log_error("calloc: %s\n", strerror(errno));
 		goto device_create_with_fdisk_exit;
 	}
 
@@ -91,13 +91,13 @@ uprov_device_create (struct uprov_device_create_info *deviceCreateInfo)
 
 	device = calloc(1, sizeof(struct uprov_device));
 	if (!device) {
-		cando_log_err("calloc: %s\n", strerror(errno));
+		udo_log_error("calloc: %s\n", strerror(errno));
 		return NULL;
 	}
 
 	device->blockDevice = strndup(deviceCreateInfo->blockDevice, BLOCK_DEVICE_MAX_SIZE);
 	if (!device->blockDevice) {
-		cando_log_err("strndup: %s\n", strerror(errno));
+		udo_log_error("strndup: %s\n", strerror(errno));
 		goto uprov_device_create_exit_error;
 	}
 
@@ -160,7 +160,7 @@ device_resize (struct uprov_device *device, int partNum)
 
 	ret = fdisk_get_partitions(cxt, &table);
 	if (ret != 0) {
-		cando_log_err("fdisk_get_partitions('%d','%d') failed\n",
+		udo_log_error("fdisk_get_partitions('%d','%d') failed\n",
                               device->blockDeviceFd, device->blockDevice);
 		goto device_resize_exit;
 	}
@@ -179,7 +179,7 @@ device_resize (struct uprov_device *device, int partNum)
 
 		ret = fdisk_set_partition(cxt, partition.number, part);
 		if (ret != 0) {
-			cando_log_err("fdisk_set_partition('%d','%s') failed\n",
+			udo_log_error("fdisk_set_partition('%d','%s') failed\n",
 			              device->blockDeviceFd, device->blockDevice);
 		}
 
@@ -231,7 +231,7 @@ uprov_device_resize (struct uprov_device_resize_info *deviceResizeInfo)
 			ret = device_resize_with_block(deviceResizeInfo->resize.blockDevice, deviceResizeInfo->partNum);
 			break;
 		default:
-			cando_log_err("Incorrect @deviceType specified\n");
+			udo_log_error("Incorrect @deviceType specified\n");
 			break;
 	}
 
