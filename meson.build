@@ -71,4 +71,4 @@ pkg.generate(libraries: pkglibs_shared,
              version : so_version,
              name : project_name,
              filebase : 'uprovision',
-             description : 'Yet another disk manipulation libfdisk wrapper library & application')
+             description : 'Disk manipulation libfdisk wrapper library')
