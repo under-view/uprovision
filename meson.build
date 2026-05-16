@@ -12,9 +12,10 @@ project(
 )
 
 pargs = []
-pname = meson.project_name()
-so_version = '.'.join(meson.project_version())
 cc = meson.get_compiler('c')
+project_name = meson.project_name()
+so_version = meson.project_version()
+src_root_dir = meson.current_source_dir()
 
 inc = include_directories('include')
 
@@ -22,17 +23,27 @@ subdir('include')
 subdir('src')
 
 libuprovision = library(
-  pname,
+  project_name, fs,
   version: so_version,
-  link_whole: libuprovision_static,
   include_directories: inc,
+  dependencies: libuprovision_deps,
   c_args: pargs,
   install: true
 )
 
-executable(pname, 'src/executables/uprovision.c',
+libuprovision_a = static_library(
+  project_name, fs,
+  include_directories: inc,
+  dependencies: libuprovision_deps,
+  c_args: pargs,
+  install: true
+)
+
+executable(project_name,
+           'src/executables/uprovision.c',
            link_with: libuprovision,
-           include_directories: [inc],
+           include_directories: inc,
+           dependencies: [libudo],
            c_args: pargs,
            install: true)
 
@@ -42,11 +53,11 @@ endif
 
 pkg = import('pkgconfig')
 
-pkglibs = [libuprovision, libuprovision_deps]
 pkgsubdirs = []
+pkglibs = [libuprovision, libuprovision_deps]
 pkg.generate(libraries: pkglibs,
              subdirs : pkgsubdirs,
              version : so_version,
-             name : pname,
+             name : project_name,
              filebase : 'uprovision',
              description : 'Yet another disk manipulation libfdisk wrapper library & application')
