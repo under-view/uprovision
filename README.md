@@ -3,8 +3,9 @@
 Yet another disk manipulation libfdisk wrapper library and application implementation.
 Used by underview to resize partitions.
 
-**Building**
-```
+## Building
+
+```sh
 $ meson build
 $ ninja -C build
 
@@ -15,17 +16,20 @@ $ meson setup --prefix="${SDKTARGETSYSROOT}/usr" \
 $ ninja -C build
 ```
 
-**Install**
+## Install
+
 ```sh
 $ ninja install -C build
 ```
 
-**Inclusion**
+## Inclusion
+
 ```C
-#include <uprovision/uprov.h>
+#include <uprov/uprov.h>
 ```
 
-**Testing**
+## Testing
+
 ```sh
 $ ninja test -C build
 ```
