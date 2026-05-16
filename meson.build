@@ -17,7 +17,11 @@ project_name = meson.project_name()
 so_version = meson.project_version()
 src_root_dir = meson.current_source_dir()
 
+file_offset_bits = get_option('file-offset-bits')
+
 inc = include_directories('include')
+
+pargs += ['-D_FILE_OFFSET_BITS=@0@'.format(file_offset_bits)]
 
 subdir('include')
 subdir('src')
