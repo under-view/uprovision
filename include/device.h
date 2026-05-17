@@ -2,32 +2,35 @@
 #define UPROV_DEVICE_H
 
 
-enum uprov_device_type {
+enum uprov_device_type
+{
 	UPROV_DEVICE = 0x00,
 	UPROV_DEVICE_BLOCK_DEVICE = 0x01,
 };
 
 
-struct uprov_device_partition {
+struct uprov_device_partition
+{
 	long int number;
-	long int startSector;
-	long int endSector;
-	long int sectorSize;
+	long int start_sector;
+	long int end_sector;
+	long int sector_size;
 };
 
 
-struct uprov_device {
-	int                           blockDeviceFd;
-	unsigned int                  blockSize;
-	char                          *blockDevice;
-	unsigned int                  partitionCount;
+struct uprov_device
+{
+	int                           bdev_fd;
+	unsigned int                  block_size;
+	char                          *block_device;
+	unsigned int                  part_count;
 	struct uprov_device_partition *partitions;
-	void                          *fdiskContext;
+	void                          *fdisk_context;
 };
 
 
 struct uprov_device_create_info {
-	const char *blockDevice;
+	const char *block_device;
 };
 
 
@@ -41,12 +44,12 @@ uprov_device_destroy (struct uprov_device *device);
 
 struct uprov_device_resize_info {
 	union {
-		const char          *blockDevice;
+		const char          *block_device;
 		struct uprov_device *device;
 	} resize;
 
-	enum uprov_device_type deviceType;
-	int                    partNum;
+	enum uprov_device_type device_type;
+	int                    part_num;
 };
 
 

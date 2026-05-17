@@ -8,13 +8,13 @@
 #include "uprov.h"
 
 static void
-help_msg (const char *binName)
+help_msg (const char *bin_name)
 {
-	udo_log_print(UDO_LOG_SUCCESS, "Usage: %s <options>\n", binName);
-	udo_log_print(UDO_LOG_WARNING, "Example: %s --resize 1\n", binName);
-	udo_log_print(UDO_LOG_INFO, "Options:\n");
-	udo_log_print(UDO_LOG_ERROR, "\t-r,--resize <partition number> "); udo_log_print(UDO_LOG_INFO, "Resize a drive partition to extend\n");
-	udo_log_print(UDO_LOG_INFO,   "\t                               "); udo_log_print(UDO_LOG_INFO, "it out to the end of drive.\n");
+	udo_log_print(UDO_LOG_SUCCESS, "Usage: %s <options>\n", bin_name);
+	udo_log_print(UDO_LOG_WARNING, "Example: %s --resize 1\n", bin_name);
+	udo_log_print(UDO_LOG_INFO,    "Options:\n");
+	udo_log_print(UDO_LOG_ERROR,   "\t-r,--resize <partition number> "); udo_log_print(UDO_LOG_INFO, "Resize a drive partition to extend\n");
+	udo_log_print(UDO_LOG_INFO,    "\t                               "); udo_log_print(UDO_LOG_INFO, "it out to the end of drive.\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -23,7 +23,7 @@ int
 main (int argc, char *argv[])
 {
 	int c;
-	int optIndex = 0;
+	int opt_index = 0;
 
 	static struct option options[] = {
 		{"resize",  required_argument, 0, 'r' },
@@ -40,14 +40,14 @@ main (int argc, char *argv[])
 	opterr = 0;
 
 	while (1) {
-		c = getopt_long(argc, argv, "hr:", options, &optIndex);
+		c = getopt_long(argc, argv, "hr:", options, &opt_index);
 		if (c == -1)
 			break;
 
 		switch (c) {
 			case 'r':
-				int partNum = atoi(optarg);
-				fprintf(stdout, "Resizeing partition %d\n", partNum);
+				int part_num = atoi(optarg);
+				fprintf(stdout, "Resizeing partition %d\n", part_num);
 				break;
 			case 'h':
 				help_msg(argv[0]);
