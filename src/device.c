@@ -10,7 +10,10 @@
 
 #include "device.h"
 
-struct uprov_device_partition
+#define BLK_NAME_MAX (1<<5)
+#define PARTITIONS_MAX (1<<7)
+
+struct uprov_device_part
 {
 	long int number;
 	long int start_sector;
@@ -21,11 +24,11 @@ struct uprov_device_partition
 
 struct uprov_device
 {
-	int                           bdev_fd;
-	unsigned int                  block_size;
-	char                          *block_device;
-	unsigned int                  part_count;
-	struct uprov_device_partition *partitions;
+	struct uprov_device_part parts[PARTITIONS_MAX];
+	char                     block_device[BLK_NAME_MAX];
+	int                      bdev_fd;
+	unsigned int             block_size;
+	unsigned int             part_count;
 };
 
 /*****************************************
@@ -106,20 +109,13 @@ device_create_with_fdisk (struct uprov_device *device)
 	device->block_size = fdisk_get_sector_size(fdisk.ctx);
 	device->part_count = fdisk_table_get_nents(fdisk.table);
 
-	device->partitions = calloc(device->part_count, sizeof(struct uprov_device_partition));
-	if (!device->partitions) {
-		udo_log_error("calloc: %s\n", strerror(errno));
-		p_uprov_fdisk_destroy(&fdisk);
-		return -1;
-	}
-
 	for (p = 0; p < device->part_count; p++) {
 		part = fdisk_table_get_partition_by_partno(fdisk.table, p);
 
-		device->partitions[p].number = fdisk_partition_get_partno(part); // redundant, but fine
-		device->partitions[p].start_sector = fdisk_partition_get_start(part);
-		device->partitions[p].end_sector = fdisk_partition_get_end(part);
-		device->partitions[p].sector_size = fdisk_partition_get_size(part);
+		device->parts[p].number = fdisk_partition_get_partno(part); // redundant, but fine
+		device->parts[p].start_sector = fdisk_partition_get_start(part);
+		device->parts[p].end_sector = fdisk_partition_get_end(part);
+		device->parts[p].sector_size = fdisk_partition_get_size(part);
 
 		fdisk_unref_partition(part); part = NULL;
 	}
@@ -143,11 +139,10 @@ uprov_device_create (struct uprov_device_create_info *device_info)
 		return NULL;
 	}
 
-	device->block_device = strndup(device_info->block_device, BLOCK_DEVICE_MAX_SIZE);
-	if (!(device->block_device)) {
-		udo_log_error("strndup: %s\n", strerror(errno));
-		uprov_device_destroy(device);
-		return NULL;
+	if (device_info->block_device) {
+		strncpy(&(device->block_device[0]), \
+			device_info->block_device, \
+			BLK_NAME_MAX-1);
 	}
 
 	ret = device_create_with_fdisk(device);
@@ -181,9 +176,9 @@ device_resize (struct uprov_device *device, int part_num)
 	struct fdisk_partition *part = NULL;
 
 	struct p_uprov_fdisk fdisk;
-	struct uprov_device_partition partition;
+	struct uprov_device_part partition;
 
-	partition = device->partitions[part_num];
+	partition = device->parts[part_num];
 
 	memset(&fdisk, 0, sizeof(struct p_uprov_fdisk));
 
@@ -298,8 +293,6 @@ uprov_device_destroy (struct uprov_device *device)
 		return;
 
 	close(device->bdev_fd);
-	free(device->block_device);
-	free(device->partitions);
 	free(device);
 }
 

@@ -9,7 +9,8 @@ enum uprov_device_type
 };
 
 
-struct uprov_device_create_info {
+struct uprov_device_create_info
+{
 	const char *block_device;
 };
 
