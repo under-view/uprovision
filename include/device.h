@@ -18,10 +18,6 @@ struct uprov_device *
 uprov_device_create (struct uprov_device_create_info *device);
 
 
-void
-uprov_device_destroy (struct uprov_device *device);
-
-
 struct uprov_device_resize_info {
 	union {
 		const char          *block_device;
@@ -36,5 +32,8 @@ struct uprov_device_resize_info {
 int
 uprov_device_resize (struct uprov_device_resize_info *deviceModInfo);
 
+
+void
+uprov_device_destroy (struct uprov_device *device);
 
 #endif /* UPROV_DEVICE_H */

@@ -136,29 +136,6 @@ uprov_device_create_exit_error:
  ********************************************/
 
 
-/****************************************
- * Start uprov_device_destroy functions *
- ****************************************/
-
-void
-uprov_device_destroy (struct uprov_device *device)
-{
-	if (!device)
-		return;
-
-	close(device->bdev_fd);
-	free(device->block_device);
-	free(device->partitions);
-	fdisk_deassign_device((struct fdisk_context*)device->fdisk_context, 0);
-	fdisk_unref_context((struct fdisk_context*)device->fdisk_context);
-	free(device);
-}
-
-/**************************************
- * End uprov_device_destroy functions *
- **************************************/
-
-
 /******************************************
  * Start of uprov_device_resize functions *
  ******************************************/
@@ -266,3 +243,26 @@ uprov_device_resize (struct uprov_device_resize_info *device_info)
 /****************************************
  * End of uprov_device_resize functions *
  ****************************************/
+
+
+/****************************************
+ * Start uprov_device_destroy functions *
+ ****************************************/
+
+void
+uprov_device_destroy (struct uprov_device *device)
+{
+	if (!device)
+		return;
+
+	close(device->bdev_fd);
+	free(device->block_device);
+	free(device->partitions);
+	fdisk_deassign_device((struct fdisk_context*)device->fdisk_context, 0);
+	fdisk_unref_context((struct fdisk_context*)device->fdisk_context);
+	free(device);
+}
+
+/**************************************
+ * End uprov_device_destroy functions *
+ **************************************/
