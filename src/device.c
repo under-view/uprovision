@@ -10,9 +10,28 @@
 
 #include "device.h"
 
-/***********************************************************
- * START OF uprov_device_create_{create,destroy} FUNCTIONS *
- ***********************************************************/
+struct uprov_device_partition
+{
+	long int number;
+	long int start_sector;
+	long int end_sector;
+	long int sector_size;
+};
+
+
+struct uprov_device
+{
+	int                           bdev_fd;
+	unsigned int                  block_size;
+	char                          *block_device;
+	unsigned int                  part_count;
+	struct uprov_device_partition *partitions;
+	void                          *fdisk_context;
+};
+
+/**********************************************
+ * start uprov_device_create_create functions *
+ **********************************************/
 
 #define BLOCK_DEVICE_MAX_SIZE 50
 
@@ -112,6 +131,14 @@ uprov_device_create_exit_error:
 	return NULL;
 }
 
+/********************************************
+ * End uprov_device_create_create functions *
+ ********************************************/
+
+
+/****************************************
+ * Start uprov_device_destroy functions *
+ ****************************************/
 
 void
 uprov_device_destroy (struct uprov_device *device)
@@ -127,16 +154,14 @@ uprov_device_destroy (struct uprov_device *device)
 	free(device);
 }
 
-
-/*********************************************************
- * END OF uprov_device_create_{create,destroy} FUNCTIONS *
- *********************************************************/
+/**************************************
+ * End uprov_device_destroy functions *
+ **************************************/
 
 
 /******************************************
- * START OF uprov_device_resize FUNCTIONS *
+ * Start of uprov_device_resize functions *
  ******************************************/
-
 
 static int
 device_resize (struct uprov_device *device, int part_num)
@@ -238,7 +263,6 @@ uprov_device_resize (struct uprov_device_resize_info *device_info)
 	return ret;
 }
 
-
 /****************************************
- * END OF uprov_device_resize FUNCTIONS *
+ * End of uprov_device_resize functions *
  ****************************************/

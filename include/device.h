@@ -9,26 +9,6 @@ enum uprov_device_type
 };
 
 
-struct uprov_device_partition
-{
-	long int number;
-	long int start_sector;
-	long int end_sector;
-	long int sector_size;
-};
-
-
-struct uprov_device
-{
-	int                           bdev_fd;
-	unsigned int                  block_size;
-	char                          *block_device;
-	unsigned int                  part_count;
-	struct uprov_device_partition *partitions;
-	void                          *fdisk_context;
-};
-
-
 struct uprov_device_create_info {
 	const char *block_device;
 };
