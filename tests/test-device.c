@@ -76,6 +76,22 @@ test_uprov_device_resize_with_block (void UDO_UNUSED **state)
 }
 
 
+/*********************************************
+ * Start of test_device_get_sizeof functions *
+ *********************************************/
+
+static void UDO_UNUSED
+test_device_get_sizeof (void UDO_UNUSED **state)
+{
+	int size = 0;
+	size = uprov_device_get_sizeof();
+	assert_int_not_equal(size, 0);
+}
+
+/*******************************************
+ * End of test_device_get_sizeof functions *
+ *******************************************/
+
 int
 main (void)
 {
@@ -84,6 +100,7 @@ main (void)
 		cmocka_unit_test(test_uprov_device_resize_with_invalid_device_type),
 		cmocka_unit_test(test_uprov_device_resize_with_device),
 		cmocka_unit_test(test_uprov_device_resize_with_block),
+		cmocka_unit_test(test_device_get_sizeof),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);

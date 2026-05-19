@@ -311,3 +311,18 @@ uprov_device_destroy (struct uprov_device *device)
 /**************************************
  * End uprov_device_destroy functions *
  **************************************/
+
+
+/****************************************************
+ * Start of non struct uprov_device param functions *
+ ****************************************************/
+
+int
+uprov_device_get_sizeof (void)
+{
+	return sizeof(struct uprov_device);
+}
+
+/**************************************************
+ * End of non struct uprov_device param functions *
+ **************************************************/

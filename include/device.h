@@ -38,4 +38,18 @@ uprov_device_resize (struct uprov_device_resize_info *device_info);
 void
 uprov_device_destroy (struct uprov_device *device);
 
+
+/*
+ * @brief Returns size of the internal structure. So,
+ *        if caller decides to allocate memory outside
+ *        of API interface they know the exact amount
+ *        of bytes.
+ *
+ * @returns
+ *	on success: sizeof(struct uprov_device)
+ *	on failure: sizeof(struct uprov_device)
+ */
+int
+uprov_device_get_sizeof (void);
+
 #endif /* UPROV_DEVICE_H */
