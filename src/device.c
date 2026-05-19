@@ -68,7 +68,7 @@ p_uprov_fdisk_destroy (struct p_uprov_fdisk *fdisk)
 #define BLOCK_DEVICE_MAX_SIZE 50
 
 static int
-device_create_with_fdisk (struct uprov_device *device)
+p_device_create_with_fdisk (struct uprov_device *device)
 {
 	int err = -1;
 	unsigned int p;
@@ -152,7 +152,7 @@ uprov_device_create (struct uprov_device *p_device,
 			BLK_NAME_MAX-1);
 	}
 
-	ret = device_create_with_fdisk(device);
+	ret = p_device_create_with_fdisk(device);
 	if (ret == -1) {
 		uprov_device_destroy(device);
 		return NULL;
@@ -171,7 +171,7 @@ uprov_device_create (struct uprov_device *p_device,
  ******************************************/
 
 static int
-device_resize (struct uprov_device *device, int part_num)
+p_device_resize (struct uprov_device *device, int part_num)
 {
 	int err = -1;
 
@@ -244,7 +244,7 @@ device_resize (struct uprov_device *device, int part_num)
 
 
 static int
-device_resize_with_block (const char *block_device, int part_num)
+p_device_resize_with_block (const char *block_device, int part_num)
 {
 	int ret = -1;
 
@@ -257,7 +257,7 @@ device_resize_with_block (const char *block_device, int part_num)
 	if (!device)
 		return -1;
 
-	ret = device_resize(device, part_num);
+	ret = p_device_resize(device, part_num);
 	uprov_device_destroy(device);
 
 	return ret;
@@ -271,10 +271,10 @@ uprov_device_resize (struct uprov_device_resize_info *device_info)
 
 	switch (device_info->device_type) {
 		case UPROV_DEVICE:
-			ret = device_resize(device_info->resize.device, device_info->part_num);
+			ret = p_device_resize(device_info->resize.device, device_info->part_num);
 			break;
 		case UPROV_DEVICE_BLOCK_DEVICE:
-			ret = device_resize_with_block(device_info->resize.block_device, device_info->part_num);
+			ret = p_device_resize_with_block(device_info->resize.block_device, device_info->part_num);
 			break;
 		default:
 			udo_log_error("Incorrect @device_type specified\n");
