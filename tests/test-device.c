@@ -16,7 +16,7 @@ test_uprov_device_create (void UDO_UNUSED **state)
 	struct uprov_device_create_info device_info;
 	device_info.block_device = BLOCK_DEVICE;
 
-	device = uprov_device_create(&device_info);
+	device = uprov_device_create(NULL, &device_info);
 	assert_non_null(device);
 
 	uprov_device_destroy(device);
@@ -49,7 +49,7 @@ test_uprov_device_resize_with_device (void UDO_UNUSED **state)
 	struct uprov_device_resize_info device_resize_info;
 
 	device_info.block_device = BLOCK_DEVICE;
-	device = uprov_device_create(&device_info);
+	device = uprov_device_create(NULL, &device_info);
 	assert_non_null(device);
 
 	device_resize_info.resize.device = device;

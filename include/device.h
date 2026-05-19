@@ -16,7 +16,8 @@ struct uprov_device_create_info
 
 
 struct uprov_device *
-uprov_device_create (struct uprov_device_create_info *device);
+uprov_device_create (struct uprov_device *device,
+                     const void *device_info);
 
 
 struct uprov_device_resize_info {
@@ -31,7 +32,7 @@ struct uprov_device_resize_info {
 
 
 int
-uprov_device_resize (struct uprov_device_resize_info *deviceModInfo);
+uprov_device_resize (struct uprov_device_resize_info *device_info);
 
 
 void

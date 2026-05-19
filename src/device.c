@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -24,11 +25,13 @@ struct uprov_device_part
 
 struct uprov_device
 {
-	struct uprov_device_part parts[PARTITIONS_MAX];
-	char                     block_device[BLK_NAME_MAX];
-	int                      bdev_fd;
-	unsigned int             block_size;
-	unsigned int             part_count;
+	struct udo_log_error_struct err;
+	bool                        free;
+	struct uprov_device_part    parts[PARTITIONS_MAX];
+	char                        block_device[BLK_NAME_MAX];
+	int                         bdev_fd;
+	unsigned int                block_size;
+	unsigned int                part_count;
 };
 
 /*****************************************
@@ -127,16 +130,20 @@ device_create_with_fdisk (struct uprov_device *device)
 
 
 struct uprov_device *
-uprov_device_create (struct uprov_device_create_info *device_info)
+uprov_device_create (struct uprov_device *p_device,
+                     const void *p_device_info)
 {
 	int ret = -1;
 
-	struct uprov_device *device = NULL;
+	struct uprov_device *device = p_device;
+	const struct uprov_device_create_info *device_info = p_device_info;
 
-	device = calloc(1, sizeof(struct uprov_device));
 	if (!device) {
-		udo_log_error("calloc: %s\n", strerror(errno));
-		return NULL;
+		device = calloc(1, sizeof(struct uprov_device));
+		if (!device) {
+			udo_log_error("calloc: %s\n", strerror(errno));
+			return NULL;
+		}
 	}
 
 	if (device_info->block_device) {
@@ -246,7 +253,7 @@ device_resize_with_block (const char *block_device, int part_num)
 	struct uprov_device_create_info device_info;
 	device_info.block_device = block_device;
 
-	device = uprov_device_create(&device_info);
+	device = uprov_device_create(NULL, &device_info);
 	if (!device)
 		return -1;
 
@@ -293,7 +300,12 @@ uprov_device_destroy (struct uprov_device *device)
 		return;
 
 	close(device->bdev_fd);
-	free(device);
+
+	if (device->free) {
+		free(device);
+	} else {
+		memset(device, 0, sizeof(struct uprov_device));
+	}
 }
 
 /**************************************
