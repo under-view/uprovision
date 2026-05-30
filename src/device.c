@@ -152,8 +152,6 @@ p_uprov_fdisk_destroy (struct p_uprov_fdisk *fdisk)
  * Start uprov_device_create functions *
  ***************************************/
 
-#define BLOCK_DEVICE_MAX_SIZE 50
-
 static int
 p_device_create_with_fdisk (struct uprov_device *device)
 {
