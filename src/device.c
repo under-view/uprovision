@@ -155,12 +155,16 @@ p_device_create_with_fdisk (struct uprov_device *device)
 
 struct uprov_device *
 uprov_device_create (struct uprov_device *p_device,
-                     const void *p_device_info)
+                     const char *block_device)
 {
 	int ret = -1;
 
 	struct uprov_device *device = p_device;
-	const struct uprov_device_create_info *device_info = p_device_info;
+
+	if (!block_device) {
+		udo_log_error("Incorrect data passed\n");
+		return NULL;
+	}
 
 	if (!device) {
 		device = calloc(1, sizeof(struct uprov_device));
@@ -170,11 +174,8 @@ uprov_device_create (struct uprov_device *p_device,
 		}
 	}
 
-	if (device_info->block_device) {
-		strncpy(&(device->block_device[0]), \
-			device_info->block_device, \
-			BLK_NAME_MAX-1);
-	}
+	strncpy(&(device->block_device[0]), \
+		block_device, BLK_NAME_MAX - 1);
 
 	ret = p_device_create_with_fdisk(device);
 	if (ret == -1) {
@@ -188,129 +189,6 @@ uprov_device_create (struct uprov_device *p_device,
 /*************************************
  * End uprov_device_create functions *
  *************************************/
-
-
-/******************************************
- * Start of uprov_device_resize functions *
- ******************************************/
-
-static int
-p_device_resize (struct uprov_device *device, int part_num)
-{
-	int err = -1;
-
-	uint64_t end_sector = 0;
-	uint64_t start_sector = 0;
-	uint64_t total_sectors = 0;
-	uint64_t offset_sectors = 0;
-
-	struct fdisk_partition *part = NULL;
-
-	struct p_uprov_fdisk fdisk;
-	struct uprov_device_part partition;
-
-	partition = device->parts[part_num];
-
-	memset(&fdisk, 0, sizeof(struct p_uprov_fdisk));
-
-	fdisk.ctx = fdisk_new_context();
-	if (!(fdisk.ctx)) {
-		udo_log_error("fdisk_new_context failed\n");
-		return -1;
-	}
-
-	err = fdisk_assign_device_by_fd(fdisk.ctx, \
-		device->bdev_fd, device->block_device, 0);
-	if (err < 0) {
-		udo_log_error("fdisk_assign_device_by_fd('%d','%s') failed\n",
-		              device->bdev_fd, device->block_device);
-		p_uprov_fdisk_destroy(&fdisk);
-		return -1;
-	}
-
-	fdisk_disable_dialogs(fdisk.ctx, 1);
-
-	err = fdisk_get_partitions(fdisk.ctx, &(fdisk.table));
-	if (err != 0) {
-		udo_log_error("fdisk_get_partitions('%d','%d') failed\n",
-                              device->bdev_fd, device->block_device);
-		p_uprov_fdisk_destroy(&fdisk);
-		return -1;
-	}
-
-	start_sector = partition.start_sector;
-	end_sector = partition.end_sector;
-	total_sectors = fdisk_get_nsectors(fdisk.ctx);
-	offset_sectors = total_sectors - start_sector - 512;
-
-	if (total_sectors > end_sector) {
-		part = fdisk_table_get_partition_by_partno(fdisk.table, partition.number);
-
-		fdisk_partition_size_explicit(part, 1);
-		fdisk_partition_set_size(part, offset_sectors);
-		fdisk_partition_end_follow_default(part, 1);
-
-		err = fdisk_set_partition(fdisk.ctx, partition.number, part);
-		if (err != 0) {
-			udo_log_error("fdisk_set_partition('%d','%s') failed\n",
-			              device->bdev_fd, device->block_device);
-			p_uprov_fdisk_destroy(&fdisk);
-			return -1;
-		}
-
-		fdisk_unref_partition(part); part = NULL;
-	}
-
-	p_uprov_fdisk_destroy(&fdisk);
-
-	return 0;
-}
-
-
-static int
-p_device_resize_with_block (const char *block_device, int part_num)
-{
-	int ret = -1;
-
-	struct uprov_device *device = NULL;
-
-	struct uprov_device_create_info device_info;
-	device_info.block_device = block_device;
-
-	device = uprov_device_create(NULL, &device_info);
-	if (!device)
-		return -1;
-
-	ret = p_device_resize(device, part_num);
-	uprov_device_destroy(device);
-
-	return ret;
-}
-
-
-int
-uprov_device_resize (struct uprov_device_resize_info *device_info)
-{
-	int ret = -1;
-
-	switch (device_info->device_type) {
-		case UPROV_DEVICE:
-			ret = p_device_resize(device_info->resize.device, device_info->part_num);
-			break;
-		case UPROV_DEVICE_BLOCK_DEVICE:
-			ret = p_device_resize_with_block(device_info->resize.block_device, device_info->part_num);
-			break;
-		default:
-			udo_log_error("Incorrect @device_type specified\n");
-			break;
-	}
-
-	return ret;
-}
-
-/****************************************
- * End of uprov_device_resize functions *
- ****************************************/
 
 
 /****************************************

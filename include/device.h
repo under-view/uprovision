@@ -25,39 +25,43 @@
 #ifndef UPROV_DEVICE_H
 #define UPROV_DEVICE_H
 
-enum uprov_device_type
-{
-	UPROV_DEVICE = 0x00,
-	UPROV_DEVICE_BLOCK_DEVICE = 0x01,
-};
+#include <udo/macros.h>
+
+/*
+ * Stores information about the uprov_device context.
+ */
+struct uprov_device;
 
 
-struct uprov_device_create_info
-{
-	const char *block_device;
-};
-
-
+/*
+ * @brief Given a block device parse with libfdisk and populate
+ *        it's partitions in a struct uprov_device context.
+ *
+ * @param device       - May be NULL or a pointer to a struct uprov_device.
+ *                       If NULL memory will be allocated and return to
+ *                       caller. If not NULL address passed will be used
+ *                       to store the newly created struct uprov_device
+ *                       context.
+ * @param block_device - Pointer to string storing name of block device
+ *                       to associate with a struct uprov_device context.
+ *
+ * @returns
+ *	on success: Pointer to a struct uprov_device
+ *	on failure: NULL
+ */
+UDO_API
 struct uprov_device *
 uprov_device_create (struct uprov_device *device,
-                     const void *device_info);
+                     const char *block_device);
 
 
-struct uprov_device_resize_info {
-	union {
-		const char          *block_device;
-		struct uprov_device *device;
-	} resize;
-
-	enum uprov_device_type device_type;
-	int                    part_num;
-};
-
-
-int
-uprov_device_resize (struct uprov_device_resize_info *device_info);
-
-
+/*
+ * @brief Frees any allocated memory and closes FD's (if open) create after
+ *        uprov_device_create() call.
+ *
+ * @param device - Pointer to a valid struct uprov_device.
+ */
+UDO_API
 void
 uprov_device_destroy (struct uprov_device *device);
 
