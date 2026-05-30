@@ -26,36 +26,99 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+
+#include <linux/fs.h>
 
 #include <libfdisk/libfdisk.h>
 #include <udo/udo.h>
 
 #include "device.h"
 
-#define BLK_NAME_MAX (1<<5)
-#define PARTITIONS_MAX (1<<7)
+#define PARTLABEL_MAX     72
+#define BLK_NAME_MAX      (1<<5)
+#define PARTITIONS_MAX    (1<<7)
+#define FSTYPE_MAX        (1<<8)
+#define TYPE_CODE_STR_MAX (1<<6)
+#define PART_NAME_MAX     (BLK_NAME_MAX+3)
 
+/*
+ * @brief Structure defining a single partition entry.
+ *        For a caller given partitioned block device.
+ *
+ * @member number        - Partition number.
+ * @member start_sector  - The starting sector of a partition.
+ * @member end_sector    - The final sector of a partition.
+ * @member sector_size   - Amount of sectors a partition has.
+ * @member logical       - Boolean indicating if partition
+ *                         logical or not. Used for MBR.
+ *                         Always false in the GPT case.
+ * @member extended      - Boolean indicating if partition
+ *                         extended or not. Used for MBR.
+ *                         Always false in the GPT case.
+ * @member fstype        - File system type of a partition.
+ * @member partlabel     - GPT partition label of a partition.
+ * @member fslabel       - File system label of a partition.
+ * @member type          - Stores the partition type.
+ *      @member code     - Stores partition type
+ *                         (Linux, Linux extended, etc..)
+ *                         in integer representation.
+ *                         Used MBR based partition table types.
+ *      @member code_str - Store partition type in string format.
+ *                         GUID partition table type in string format.
+ *                         Used GPT based partition table types.
+ *                         https://wiki.archlinux.org/title/GPT_fdisk#Partition_type
+ */
 struct uprov_device_part
 {
-	long int number;
-	long int start_sector;
-	long int end_sector;
-	long int sector_size;
+	size_t   number;
+	uint64_t start_sector;
+	uint64_t end_sector;
+	uint64_t sector_size;
+	bool     logical;
+	bool     extended;
+	char     fstype[FSTYPE_MAX];
+	char     fslabel[FSLABEL_MAX];
+	char     partlabel[PARTLABEL_MAX];
+	union _type_code {
+		uint32_t code;
+		char     code_str[TYPE_CODE_STR_MAX];
+	} type;
 };
 
 
+/*
+ * @brief Structure storing everything required
+ *        to repartition a block device.
+ *
+ * @member err          - Stores information about the error that occured
+ *                        for the given context and may later be retrieved
+ *                        by caller.
+ * @member free         - If structure allocated with calloc(3) member will be
+ *                        set to true so that, we know to call free(3) when
+ *                        destroying the context.
+ * @member parts        - Array of partitions for the given @block_device.
+ * @member block_device - Block device name in string format.
+ * @member part_name    - Used to temporarily acquire and store name
+ *                        of a partition. Or the absolute path to
+ *                        the block device partition.
+ * @member fd           - @block_device open file descriptor.
+ * @member sector_sz    - Byte size of each sector of a block device.
+ *                        Typically 512 bytes per sector.
+ */
 struct uprov_device
 {
 	struct udo_log_error_struct err;
 	bool                        free;
 	struct uprov_device_part    parts[PARTITIONS_MAX];
 	char                        block_device[BLK_NAME_MAX];
-	int                         bdev_fd;
-	unsigned int                block_size;
-	unsigned int                part_count;
+	char                        part_name[PART_NAME_MAX];
+	int                         fd;
+	uint32_t                    sector_sz;
+	size_t                      part_count;
 };
 
 /*****************************************
@@ -109,18 +172,18 @@ p_device_create_with_fdisk (struct uprov_device *device)
 		return -1;
 	}
 
-	device->bdev_fd = open(device->block_device, O_RDWR);
-	if (device->bdev_fd < 0) {
+	device->fd = open(device->block_device, O_RDWR);
+	if (device->fd < 0) {
 		udo_log_error("open: %s\n", strerror(errno));
 		p_uprov_fdisk_destroy(&fdisk);
 		return -1;
 	}
 
 	err = fdisk_assign_device_by_fd(fdisk.ctx, \
-		device->bdev_fd, device->block_device, 0);
+		device->fd, device->block_device, 0);
 	if (err < 0) {
 		udo_log_error("fdisk_assign_device_by_fd('%d','%s') failed\n",
-		              device->bdev_fd, device->block_device);
+		              device->fd, device->block_device);
 		p_uprov_fdisk_destroy(&fdisk);
 		return -1;
 	}
@@ -128,12 +191,12 @@ p_device_create_with_fdisk (struct uprov_device *device)
 	err = fdisk_get_partitions(fdisk.ctx, &(fdisk.table));
 	if (err != 0) {
 		udo_log_error("fdisk_get_partitions('%d','%s') failed\n",
-		              device->bdev_fd, device->block_device);
+		              device->fd, device->block_device);
 		p_uprov_fdisk_destroy(&fdisk);
 		return -1;
 	}
 
-	device->block_size = fdisk_get_sector_size(fdisk.ctx);
+	device->sector_sz = fdisk_get_sector_size(fdisk.ctx);
 	device->part_count = fdisk_table_get_nents(fdisk.table);
 
 	for (p = 0; p < device->part_count; p++) {
@@ -201,7 +264,7 @@ uprov_device_destroy (struct uprov_device *device)
 	if (!device)
 		return;
 
-	close(device->bdev_fd);
+	close(device->fd);
 
 	if (device->free) {
 		free(device);
