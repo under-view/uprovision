@@ -7,5 +7,5 @@ option('tests',
       description: 'Build tests')
 
 option('block-device',
-      type: 'string', value: '/dev/mmcblk0',
+      type: 'string', value: '/dev/loop0',
       description: 'Stores path to block device')
