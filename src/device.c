@@ -159,12 +159,14 @@ static int
 p_device_create_with_fdisk (struct uprov_device *device)
 {
 	uint32_t p;
+	uint8_t gpt;
 	int err = -1;
 
 	struct p_uprov_fdisk fdisk;
 
 	struct fdisk_label *lb = NULL;
 	struct fdisk_partition *part = NULL;
+	struct fdisk_parttype  *parttype = NULL;
 
 	char *fstype = NULL, *fslabel = NULL;
 
@@ -205,6 +207,7 @@ p_device_create_with_fdisk (struct uprov_device *device)
 
 	lb = fdisk_get_label(fdisk.ctx, NULL);
 	strncpy(device->table_type, fdisk_label_get_name(lb), TABLE_TYPE_MAX-1);
+	gpt = UDO_STRTOU(device->table_type);
 
 	for (p = 0; p < device->part_count; p++) {
 		part = fdisk_table_get_partition_by_partno(fdisk.table, p);
@@ -232,6 +235,18 @@ p_device_create_with_fdisk (struct uprov_device *device)
 			&(char){'\0'}, FSTYPE_MAX);
 		free(fstype); fstype = NULL;
 
+		parttype = fdisk_partition_get_type(part);
+
+		if (gpt == 0x4b) {
+			strncpy(device->parts[p].type.code_str,
+				fdisk_parttype_get_string(parttype),
+				TYPE_CODE_STR_MAX);
+		} else {
+			device->parts[p].type.code = \
+				fdisk_parttype_get_code(parttype);
+		}
+
+		fdisk_unref_parttype(parttype); parttype = NULL;
 		fdisk_unref_partition(part); part = NULL;
 	}
 
