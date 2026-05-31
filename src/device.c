@@ -40,6 +40,7 @@
 
 #define PARTLABEL_MAX     72
 #define BLK_NAME_MAX      (1<<5)
+#define TABLE_TYPE_MAX    (1<<3)
 #define PARTITIONS_MAX    (1<<7)
 #define FSTYPE_MAX        (1<<8)
 #define TYPE_CODE_STR_MAX (1<<6)
@@ -102,6 +103,7 @@ struct uprov_device_part
  *                        destroying the context.
  * @member parts        - Array of partitions for the given @block_device.
  * @member block_device - Block device name in string format.
+ * @member table_type   - Partition table type used by @block_device.
  * @member part_name    - Used to temporarily acquire and store name
  *                        of a partition. Or the absolute path to
  *                        the block device partition.
@@ -115,6 +117,7 @@ struct uprov_device
 	bool                        free;
 	struct uprov_device_part    parts[PARTITIONS_MAX];
 	char                        block_device[BLK_NAME_MAX];
+	char                        table_type[TABLE_TYPE_MAX];
 	char                        part_name[PART_NAME_MAX];
 	int                         fd;
 	uint32_t                    sector_sz;
@@ -155,11 +158,12 @@ p_uprov_fdisk_destroy (struct p_uprov_fdisk *fdisk)
 static int
 p_device_create_with_fdisk (struct uprov_device *device)
 {
+	uint32_t p;
 	int err = -1;
-	unsigned int p;
 
 	struct p_uprov_fdisk fdisk;
 
+	struct fdisk_label *lb = NULL;
 	struct fdisk_partition *part = NULL;
 
 	memset(&fdisk, 0, sizeof(struct p_uprov_fdisk));
@@ -171,7 +175,7 @@ p_device_create_with_fdisk (struct uprov_device *device)
 	}
 
 	device->fd = open(device->block_device, O_RDWR);
-	if (device->fd < 0) {
+	if (device->fd == -1) {
 		udo_log_error("open: %s\n", strerror(errno));
 		p_uprov_fdisk_destroy(&fdisk);
 		return -1;
@@ -196,6 +200,9 @@ p_device_create_with_fdisk (struct uprov_device *device)
 
 	device->sector_sz = fdisk_get_sector_size(fdisk.ctx);
 	device->part_count = fdisk_table_get_nents(fdisk.table);
+
+	lb = fdisk_get_label(fdisk.ctx, NULL);
+	strncpy(device->table_type, fdisk_label_get_name(lb), TABLE_TYPE_MAX-1);
 
 	for (p = 0; p < device->part_count; p++) {
 		part = fdisk_table_get_partition_by_partno(fdisk.table, p);
