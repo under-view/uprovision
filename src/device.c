@@ -161,12 +161,12 @@ p_device_create_with_fdisk (struct uprov_device *device)
 	uint32_t p;
 	int err = -1;
 
-	char *fstype = NULL;
-
 	struct p_uprov_fdisk fdisk;
 
 	struct fdisk_label *lb = NULL;
 	struct fdisk_partition *part = NULL;
+
+	char *fstype = NULL, *fslabel = NULL;
 
 	memset(&fdisk, 0, sizeof(struct p_uprov_fdisk));
 
@@ -214,11 +214,20 @@ p_device_create_with_fdisk (struct uprov_device *device)
 		device->parts[p].end_sector = fdisk_partition_get_end(part);
 		device->parts[p].sector_size = fdisk_partition_get_size(part);
 
+		/* Acquire fslabel of a partiton */
+		fdisk_partition_to_string(part, fdisk.ctx,
+					  FDISK_FIELD_FSLABEL,
+					  &fslabel);
+		strncpy(device->parts[p].fslabel, \
+			(fslabel) ? fslabel : \
+			&(char){'\0'}, FSLABEL_MAX);
+		free(fslabel); fslabel = NULL;
+
 		/* Acquire fstype of a partition */
 		fdisk_partition_to_string(part, fdisk.ctx,
 		                          FDISK_FIELD_FSTYPE,
 		                          &fstype);
-		strncpy(device->parts[p].fstype,
+		strncpy(device->parts[p].fstype, \
 		        (fstype) ? fstype : \
 			&(char){'\0'}, FSTYPE_MAX);
 		free(fstype); fstype = NULL;
