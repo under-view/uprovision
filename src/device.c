@@ -38,6 +38,7 @@
 
 #include "device.h"
 
+#define IS_GPT            0x4B
 #define PARTLABEL_MAX     72
 #define BLK_NAME_MAX      (1<<5)
 #define TABLE_TYPE_MAX    (1<<3)
@@ -237,7 +238,7 @@ p_device_create_with_fdisk (struct uprov_device *device)
 
 		parttype = fdisk_partition_get_type(part);
 
-		if (gpt == 0x4b) {
+		if (gpt == IS_GPT) {
 			strncpy(device->parts[p].type.code_str,
 				fdisk_parttype_get_string(parttype),
 				TYPE_CODE_STR_MAX);
