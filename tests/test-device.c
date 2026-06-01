@@ -41,6 +41,8 @@ test_device_create (void UDO_UNUSED **state)
 {
 	struct uprov_device *device = NULL;
 
+	udo_log_set_level(UDO_LOG_ALL);
+
 	device = uprov_device_create(NULL, BLOCK_DEVICE);
 	assert_non_null(device);
 

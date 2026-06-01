@@ -168,7 +168,7 @@ p_device_create_with_fdisk (struct uprov_device *device)
 	struct fdisk_partition *part = NULL;
 	struct fdisk_parttype  *parttype = NULL;
 
-	char *fstype = NULL, *fslabel = NULL;
+	char *fstype = NULL, *fslabel = NULL, *partlabel = NULL;
 
 	memset(&fdisk, 0, sizeof(struct p_uprov_fdisk));
 
@@ -241,6 +241,14 @@ p_device_create_with_fdisk (struct uprov_device *device)
 			strncpy(device->parts[p].type.code_str,
 				fdisk_parttype_get_string(parttype),
 				TYPE_CODE_STR_MAX);
+
+			fdisk_partition_to_string(part, fdisk.ctx,
+						  FDISK_FIELD_NAME,
+						  &partlabel);
+			strncpy(device->parts[p].partlabel,
+				(partlabel) ? partlabel : \
+				&(char){'\0'}, PARTLABEL_MAX);
+			free(partlabel); partlabel = NULL;
 		} else {
 			device->parts[p].type.code = \
 				fdisk_parttype_get_code(parttype);
