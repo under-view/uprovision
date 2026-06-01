@@ -253,6 +253,12 @@ p_device_create_with_fdisk (struct uprov_device *device)
 		} else {
 			device->parts[p].type.code = \
 				fdisk_parttype_get_code(parttype);
+
+			if (fdisk_partition_is_nested(part)) {
+				device->parts[p].logical = true;
+			} else if (fdisk_partition_is_container(part)) {
+				device->parts[p].extended = true;
+			}
 		}
 
 		fdisk_unref_parttype(parttype); parttype = NULL;
